@@ -12,26 +12,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      # Installation obligatoire de Tesseract OCR avec la langue française
       - name: Installer Tesseract OCR
         run: sudo apt-get install -y tesseract-ocr tesseract-ocr-fra
 
+      # Installation des dépendances Python
       - name: Installer Python et dépendances
         run: |
           python -m pip install --upgrade pip
           pip install pytesseract Pillow
 
-      - name: OCR sur les images (génération du résultat OCR)
+      # Étape OCR : Générer les résultats à partir des images présentes dans le dossier analyse
+      - name: Exécuter l'OCR sur les images du dossier analyse
         run: |
           mkdir -p results
           echo "Résultats OCR :" > results/resultat_ocr.txt
           for img in analyse/*.jpg analyse/*.png; do
             [ -f "$img" ] || continue
             texte=$(tesseract "$img" stdout -l fra)
-            echo "Fichier : $(basename "$img")" >> results/resultat_ocr.txt
+            echo "🖼️ Image : $(basename "$img")" >> results/resultat_ocr.txt
             echo "$texte" >> results/resultat_ocr.txt
             echo "---------------------------------------" >> results/resultat_ocr.txt
           done
-      
+          cat results/resultat_ocr.txt  # Affiche les résultats OCR dans le log d'action (pour vérifier)
+
+      # Générer explicitement la page HTML avec les résultats OCR
       - name: Générer automatiquement la page HTML finale
         run: |
           mkdir -p docs
@@ -41,6 +46,7 @@ jobs:
           cat results/resultat_ocr.txt >> docs/index.html
           echo "</pre></body></html>" >> docs/index.html
 
+      # Commit et Push automatique des résultats avec le Token explicite
       - name: Commit et Push automatique des résultats OCR
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
