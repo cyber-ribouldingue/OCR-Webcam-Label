@@ -3,7 +3,7 @@ import pytesseract
 import os
 
 # Pour Windows : décommentez et modifiez le chemin vers l'exécutable Tesseract si nécessaire
-# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 def capture_image(output_path='images/captured_image.jpg'):
     """
