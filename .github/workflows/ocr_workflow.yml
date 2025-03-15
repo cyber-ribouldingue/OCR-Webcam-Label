@@ -20,7 +20,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytesseract Pillow
 
-      - name: OCR sur images du dossier analyse
+      - name: OCR sur les images (génération du résultat OCR)
         run: |
           mkdir -p results
           echo "Résultats OCR :" > results/resultat_ocr.txt
@@ -32,16 +32,19 @@ jobs:
             echo "---------------------------------------" >> results/resultat_ocr.txt
           done
       
-      - name: Générer fichier HTML pour GitHub Pages
+      - name: Générer automatiquement la page HTML finale
         run: |
           mkdir -p docs
           echo "<!DOCTYPE html>" > docs/index.html
           echo "<html lang='fr'><head><meta charset='UTF-8'><title>Résultats OCR</title></head><body>" >> docs/index.html
-          echo "<h1>Résultats OCR :</h1><pre>" >> docs/index.html
+          echo "<h1>Résultats OCR</h1><pre>" >> docs/index.html
           cat results/resultat_ocr.txt >> docs/index.html
           echo "</pre></body></html>" >> docs/index.html
 
-      - name: Commit et Push résultats vers GitHub Pages
+      - name: Commit et Push automatique des résultats OCR
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "🔄 Mise à jour automatique résultats OCR"
+          branch: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
