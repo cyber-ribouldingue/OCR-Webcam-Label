@@ -1,4 +1,3 @@
-
 name: OCR Workflow
 
 on:
@@ -21,24 +20,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytesseract Pillow
 
-      - name: OCR sur les nouvelles images
+      - name: OCR sur images du dossier analyse
         run: |
           mkdir -p results
+          echo "Résultats OCR :" > results/resultat_ocr.txt
           for img in analyse/*.jpg analyse/*.png; do
             [ -f "$img" ] || continue
             texte=$(tesseract "$img" stdout -l fra)
-            echo "Résultat OCR pour $(basename "$img"):" >> results/resultat_ocr.txt
+            echo "Fichier : $(basename "$img")" >> results/resultat_ocr.txt
             echo "$texte" >> results/resultat_ocr.txt
             echo "---------------------------------------" >> results/resultat_ocr.txt
           done
       
-      - name: Copier résultat vers GitHub Pages
+      - name: Générer fichier HTML pour GitHub Pages
         run: |
           mkdir -p docs
-          cp results/resultat_ocr.txt docs/resultat_ocr.txt
-          echo "<html><body><pre>$(cat docs/resultat_ocr.txt)</pre></body></html>" > docs/index.html
+          echo "<!DOCTYPE html>" > docs/index.html
+          echo "<html lang='fr'><head><meta charset='UTF-8'><title>Résultats OCR</title></head><body>" >> docs/index.html
+          echo "<h1>Résultats OCR :</h1><pre>" >> docs/index.html
+          cat results/resultat_ocr.txt >> docs/index.html
+          echo "</pre></body></html>" >> docs/index.html
 
-      - name: Commit & Push résultats
+      - name: Commit et Push résultats vers GitHub Pages
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "🤖 Mise à jour automatique des résultats OCR"
+          commit_message: "🔄 Mise à jour automatique résultats OCR"
