@@ -1,1 +1,44 @@
 
+name: OCR Workflow
+
+on:
+  push:
+    paths:
+      - 'analyse/**'
+
+jobs:
+  ocr-extraction:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Installer Tesseract OCR
+        run: sudo apt-get install -y tesseract-ocr tesseract-ocr-fra
+
+      - name: Installer Python et dépendances
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytesseract Pillow
+
+      - name: OCR sur les nouvelles images
+        run: |
+          mkdir -p results
+          for img in analyse/*.jpg analyse/*.png; do
+            [ -f "$img" ] || continue
+            texte=$(tesseract "$img" stdout -l fra)
+            echo "Résultat OCR pour $(basename "$img"):" >> results/resultat_ocr.txt
+            echo "$texte" >> results/resultat_ocr.txt
+            echo "---------------------------------------" >> results/resultat_ocr.txt
+          done
+      
+      - name: Copier résultat vers GitHub Pages
+        run: |
+          mkdir -p docs
+          cp results/resultat_ocr.txt docs/resultat_ocr.txt
+          echo "<html><body><pre>$(cat docs/resultat_ocr.txt)</pre></body></html>" > docs/index.html
+
+      - name: Commit & Push résultats
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "🤖 Mise à jour automatique des résultats OCR"
